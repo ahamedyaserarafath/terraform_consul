@@ -56,8 +56,8 @@ resource "aws_instance" "consul_instance" {
       else
           sudo docker run -d \
             --net=host \
-            --hostname ${consul_server} \
-            --name ${consul_server} \
+            --hostname consul_server_${count.index + 1} \
+            --name consul_server_${count.index + 1} \
             --env "SERVICE_IGNORE=true" \
             --env "CONSUL_CLIENT_INTERFACE=eth0" \
             --env "CONSUL_BIND_INTERFACE=eth0" \
@@ -73,13 +73,14 @@ EOT
     ]
   }
   provisioner "local-exec" {
-    inline = [
-        "echo  -e ${tls_private_key.sskeygen_execution.private_key_pem} > ${var.aws_public_key_name}.pem",
-        "chmod 400 ${var.aws_public_key_name}.pem"
-      ]
+    command =
+<<EOT
+        "echo  -e ${tls_private_key.sskeygen_execution.private_key_pem} > ${var.aws_public_key_name}.pem;
+        chmod 400 ${var.aws_public_key_name}.pem"
+EOT
   }
   tags = {
     Name  = "consul_server_${count.index + 1}"
-    Batch = "5AM"
+    Environment = "${var.env}"
   }
 }
