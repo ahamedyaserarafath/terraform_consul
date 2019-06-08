@@ -36,9 +36,9 @@ resource "aws_instance" "consul_instance" {
       "sudo apt -y install docker-ce",
       "sudo mkdir -p /home/ubuntu/consul/data",
       "sudo mkdir -p /home/ubuntu/consul/config",
+      "public_ip=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)",
 <<EOT
       if [ "${count.index + 1}" == "0" ];then
-        public_ip=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
         sudo docker run -d \
           --net=host \
           --hostname consul_server_${count.index + 1} \
@@ -66,7 +66,7 @@ resource "aws_instance" "consul_instance" {
             --publish 8500:8500 \
             consul:latest \
             consul agent -server -ui -client=0.0.0.0 \
-              -advertise='{{ curl http://169.254.169.254/latest/meta-data/public-ipv4 }}' \
+              -advertise='$public_ip' \
               -retry-join="${aws_instance.consul_instance[0].private_ip}" \
               -data-dir="/consul/data"
       fi
