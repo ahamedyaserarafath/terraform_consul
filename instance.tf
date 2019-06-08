@@ -28,7 +28,7 @@ resource "aws_instance" "consul_instance" {
   }
   provisioner "remote-exec" {
     inline = [
-      "sudo apt update",
+      "sudo apt updatefailure",
       "sudo apt -y install apt-transport-https ca-certificates curl software-properties-common",
       "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -",
       "sudo add-apt-repository 'deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable'",
@@ -36,9 +36,9 @@ resource "aws_instance" "consul_instance" {
       "sudo apt -y install docker-ce",
       "sudo mkdir -p /home/ubuntu/consul/data",
       "sudo mkdir -p /home/ubuntu/consul/config",
-      "public_ip=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)",
+      "public_ip=$(curl -s 'http://169.254.169.254/latest/meta-data/public-ipv4')",
 <<EOT
-      if [ "${count.index + 1}" == "0" ];then
+      if [ "${count.index + 1}" == "1" ];then
         sudo docker run -d \
           --net=host \
           --hostname consul_server_${count.index + 1} \
@@ -52,7 +52,7 @@ resource "aws_instance" "consul_instance" {
           consul:latest \
           consul agent -server -ui -client=0.0.0.0 \
             -bootstrap-expect=3 \
-            -advertise='$public_ip' \
+            -advertise="$public_ip" \
             -data-dir='/consul/data'
       else
           sudo docker run -d \
@@ -66,7 +66,7 @@ resource "aws_instance" "consul_instance" {
             --publish 8500:8500 \
             consul:latest \
             consul agent -server -ui -client=0.0.0.0 \
-              -advertise='$public_ip' \
+              -advertise="$public_ip" \
               -retry-join="${aws_instance.consul_instance[0].private_ip}" \
               -data-dir="/consul/data"
       fi
