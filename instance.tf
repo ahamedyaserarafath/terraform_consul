@@ -50,7 +50,7 @@ resource "aws_instance" "consul_instance" {
         consul:latest \
         consul agent -server -ui -client=0.0.0.0 \
           -bootstrap-expect=3 \
-          -advertise='${aws_instance.consul_instance.public_ip}' \
+          -advertise='{{ curl http://169.254.169.254/latest/meta-data/public-ipv4 }}' \
           -data-dir='/consul/data'
 EOT
     ]
