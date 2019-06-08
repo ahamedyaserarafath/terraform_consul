@@ -34,6 +34,25 @@ resource "aws_instance" "consul_instance" {
       "sudo add-apt-repository 'deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable'",
       "sudo apt update",
       "sudo apt -y install docker-ce",
+      "mkdir -p /home/ubuntu/consul/data",
+      "mkdir -p /home/ubuntu/consul/config",
+<<EOT
+      "docker run -d \
+        --net=host \
+        --hostname consul_server_${count.index + 1} \
+        --name consul_server_${count.index + 1} \
+        --env 'SERVICE_IGNORE=true' \
+        --env 'CONSUL_CLIENT_INTERFACE=eth0' \
+        --env 'CONSUL_BIND_INTERFACE=eth0' \
+        --volume /home/ubuntu/consul/data:/consul/data \
+        --volume /home/ubuntu/consul/config:/consul/config \
+        --publish 8500:8500 \
+        consul:latest \
+        consul agent -server -ui -client=0.0.0.0 \
+          -bootstrap-expect=3 \
+          -advertise='{{ GetInterfaceIP 'eth0' }}' \
+          -data-dir='/consul/data'"
+EOT
     ]
   }
   tags = {
