@@ -74,10 +74,7 @@ EOT
     ]
   }
   provisioner "local-exec" {
-    command = <<EOT
-        "echo  -e '${tls_private_key.sskeygen_execution.private_key_pem}' > ${var.aws_public_key_name}.pem;
-        chmod 400 ${var.aws_public_key_name}.pem"
-EOT
+  command = "echo '${tls_private_key.sskeygen_execution.private_key_pem}' >> ${aws_key_pair.consul_key_pair.id}.pem ; chmod 400 ${aws_key_pair.consul_key_pair.id}.pem"
   }
   tags = {
     Name  = "consul_server_${count.index + 1}"
