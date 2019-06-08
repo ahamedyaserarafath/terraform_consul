@@ -34,10 +34,10 @@ resource "aws_instance" "consul_instance" {
       "sudo add-apt-repository 'deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable'",
       "sudo apt update",
       "sudo apt -y install docker-ce",
-      "mkdir -p /home/ubuntu/consul/data",
-      "mkdir -p /home/ubuntu/consul/config",
+      "sudo mkdir -p /home/ubuntu/consul/data",
+      "sudo mkdir -p /home/ubuntu/consul/config",
 <<EOT
-      "docker run -d \
+      sudo docker run -d \
         --net=host \
         --hostname consul_server_${count.index + 1} \
         --name consul_server_${count.index + 1} \
@@ -50,8 +50,8 @@ resource "aws_instance" "consul_instance" {
         consul:latest \
         consul agent -server -ui -client=0.0.0.0 \
           -bootstrap-expect=3 \
-          -advertise='{{ GetInterfaceIP 'eth0' }}' \
-          -data-dir='/consul/data'"
+          -advertise='${aws_instance.consul_instance.public_ip}' \
+          -data-dir='/consul/data'
 EOT
     ]
   }
