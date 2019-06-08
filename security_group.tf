@@ -26,7 +26,9 @@ resource "aws_security_group_rule" "consul_server_security_group_rule_ingress_tc
   from_port         = "${element(split(",", var.consul_server_security_group_closed_port), count.index)}"
   to_port           = "${element(split(",", var.consul_server_security_group_closed_port), count.index)}"
   protocol          = "tcp"
-  cidr_blocks       = ["${var.consul_server_vpc_cidr}"]
+  # cidr_blocks       = ["${var.consul_server_vpc_cidr}"]
+  # For now opening to all
+  cidr_blocks       = ["0.0.0.0/0"]
   description       = ""
   security_group_id = "${aws_security_group.consul_server_security_group_closed.id}"
 }
@@ -37,7 +39,8 @@ resource "aws_security_group_rule" "consul_server_security_group_rule_ingress_ud
   from_port         = "${element(split(",", var.consul_server_security_group_closed_port), count.index)}"
   to_port           = "${element(split(",", var.consul_server_security_group_closed_port), count.index)}"
   protocol          = "udp"
-  cidr_blocks       = ["${var.consul_server_vpc_cidr}"]
+  # cidr_blocks       = ["${var.consul_server_vpc_cidr}"]
+  cidr_blocks       = ["0.0.0.0/0"]
   description       = ""
   security_group_id = "${aws_security_group.consul_server_security_group_closed.id}"
 }
