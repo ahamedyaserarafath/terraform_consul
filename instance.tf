@@ -38,6 +38,7 @@ resource "aws_instance" "consul_instance" {
       "sudo mkdir -p /home/ubuntu/consul/config",
 <<EOT
       if [ "${count.index + 1}" == "0" ];then
+        public_ip=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
         sudo docker run -d \
           --net=host \
           --hostname consul_server_${count.index + 1} \
@@ -51,7 +52,7 @@ resource "aws_instance" "consul_instance" {
           consul:latest \
           consul agent -server -ui -client=0.0.0.0 \
             -bootstrap-expect=3 \
-            -advertise='{{ curl http://169.254.169.254/latest/meta-data/public-ipv4 }}' \
+            -advertise='$public_ip' \
             -data-dir='/consul/data'
       else
           sudo docker run -d \
@@ -73,9 +74,8 @@ EOT
     ]
   }
   provisioner "local-exec" {
-    command =
-<<EOT
-        "echo  -e ${tls_private_key.sskeygen_execution.private_key_pem} > ${var.aws_public_key_name}.pem;
+    command = <<EOT
+        "echo  -e '${tls_private_key.sskeygen_execution.private_key_pem}' > ${var.aws_public_key_name}.pem;
         chmod 400 ${var.aws_public_key_name}.pem"
 EOT
   }
