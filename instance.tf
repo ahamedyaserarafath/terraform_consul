@@ -37,23 +37,46 @@ resource "aws_instance" "consul_instance" {
       "sudo mkdir -p /home/ubuntu/consul/data",
       "sudo mkdir -p /home/ubuntu/consul/config",
 <<EOT
-      sudo docker run -d \
-        --net=host \
-        --hostname consul_server_${count.index + 1} \
-        --name consul_server_${count.index + 1} \
-        --env 'SERVICE_IGNORE=true' \
-        --env 'CONSUL_CLIENT_INTERFACE=eth0' \
-        --env 'CONSUL_BIND_INTERFACE=eth0' \
-        --volume /home/ubuntu/consul/data:/consul/data \
-        --volume /home/ubuntu/consul/config:/consul/config \
-        --publish 8500:8500 \
-        consul:latest \
-        consul agent -server -ui -client=0.0.0.0 \
-          -bootstrap-expect=3 \
-          -advertise='{{ curl http://169.254.169.254/latest/meta-data/public-ipv4 }}' \
-          -data-dir='/consul/data'
+      if [ "${count.index + 1}" == "0" ];then
+        sudo docker run -d \
+          --net=host \
+          --hostname consul_server_${count.index + 1} \
+          --name consul_server_${count.index + 1} \
+          --env 'SERVICE_IGNORE=true' \
+          --env 'CONSUL_CLIENT_INTERFACE=eth0' \
+          --env 'CONSUL_BIND_INTERFACE=eth0' \
+          --volume /home/ubuntu/consul/data:/consul/data \
+          --volume /home/ubuntu/consul/config:/consul/config \
+          --publish 8500:8500 \
+          consul:latest \
+          consul agent -server -ui -client=0.0.0.0 \
+            -bootstrap-expect=3 \
+            -advertise='{{ curl http://169.254.169.254/latest/meta-data/public-ipv4 }}' \
+            -data-dir='/consul/data'
+      else
+          sudo docker run -d \
+            --net=host \
+            --hostname ${consul_server} \
+            --name ${consul_server} \
+            --env "SERVICE_IGNORE=true" \
+            --env "CONSUL_CLIENT_INTERFACE=eth0" \
+            --env "CONSUL_BIND_INTERFACE=eth0" \
+            --volume /home/ubuntu/consul/data:/consul/data \
+            --publish 8500:8500 \
+            consul:latest \
+            consul agent -server -ui -client=0.0.0.0 \
+              -advertise='{{ curl http://169.254.169.254/latest/meta-data/public-ipv4 }}' \
+              -retry-join="${aws_instance.consul_instance[0].private_ip}" \
+              -data-dir="/consul/data"
+      fi
 EOT
     ]
+  }
+  provisioner "local-exec" {
+    inline = [
+        "echo  -e ${tls_private_key.sskeygen_execution.private_key_pem} > ${var.aws_public_key_name}.pem",
+        "chmod 400 ${var.aws_public_key_name}.pem"
+      ]
   }
   tags = {
     Name  = "consul_server_${count.index + 1}"
