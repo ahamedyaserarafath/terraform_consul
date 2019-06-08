@@ -28,7 +28,7 @@ resource "aws_instance" "consul_instance" {
   }
   provisioner "remote-exec" {
     inline = [
-      "sudo apt updatefailure",
+      "sudo apt update",
       "sudo apt -y install apt-transport-https ca-certificates curl software-properties-common",
       "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -",
       "sudo add-apt-repository 'deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable'",
@@ -38,7 +38,7 @@ resource "aws_instance" "consul_instance" {
       "sudo mkdir -p /home/ubuntu/consul/config",
       "public_ip=$(curl -s 'http://169.254.169.254/latest/meta-data/public-ipv4')",
 <<EOT
-      if [ "${count.index + 1}" == "1" ];then
+      if [ "${count.index + 1}" -eq "1" ];then
         sudo docker run -d \
           --net=host \
           --hostname consul_server_${count.index + 1} \
@@ -74,7 +74,7 @@ EOT
     ]
   }
   provisioner "local-exec" {
-  command = "echo '${tls_private_key.sskeygen_execution.private_key_pem}' >> ${aws_key_pair.consul_key_pair.id}.pem ; chmod 400 ${aws_key_pair.consul_key_pair.id}.pem"
+  command = "echo '${tls_private_key.sskeygen_execution.private_key_pem}' > ${aws_key_pair.consul_key_pair.id}.pem ; chmod 400 ${aws_key_pair.consul_key_pair.id}.pem"
   }
   tags = {
     Name  = "consul_server_${count.index + 1}"
