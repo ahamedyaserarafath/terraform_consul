@@ -3,6 +3,7 @@
 - [Introduction](#Introduction)
 - [Pre-requisites](#pre-requisites)
 - [Installation and configuration](#Installation-and-configuration)
+- [Install Consul registory in ECS](#Install Consul registory in ECS)
 
 # Introduction
 In this post, we will deploy a highly available three-node Consul cluster to AWS. We will use Terraform to provision a set of EC2 instances and accompanying infrastructure.
@@ -48,3 +49,46 @@ terraform plan
 terraform apply
 ```
 Note: The above command will provision the ec2 instance and install the Consul
+
+# Install Consul registory in ECS
+Do create a ELB for those three consul server with 8500
+
+1. Edit the ecs_registrator.sh and add the respective server ip or ELB, make sure ECS can communicate with the same.
+```
+CONSUL_IP=54.254.252.6
+to
+CONSUL_IP=<ELB/IP>
+```
+2. Run the below command where dockerfile exists(Here [gliderlabs/registrator](https://github.com/gliderlabs/registrator) is used)
+```
+docker build -t ecs_consul_registrator .
+```
+3. Push the ecs_consul_registrator to ECR, please follow the [AWS Documents](https://docs.aws.amazon.com/AmazonECR/latest/userguide/ECR_GetStarted.html) to push the docker image.
+
+4. Create a task with ecs_consul_registrator Container and mount the below file for service discovery of ecs cluster.
+```
+Container Path    	Source Volume 	Read only
+/tmp/docker.sock	  sourcedocker
+
+Name - sourcedocker
+Source Path -/var/run/docker.sock
+```
+Json parser for your reference
+```
+       ...
+       "mountPoints": [
+        {
+          "readOnly": null,
+          "containerPath": "/tmp/docker.sock",
+          "sourceVolume": "sourcedocker"
+        }
+        ...
+        "volumes": [
+        {
+          "name": "sourcedocker",
+          "host": {
+            "sourcePath": "/var/run/docker.sock"
+        }
+        ...
+
+```
