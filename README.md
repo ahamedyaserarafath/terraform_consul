@@ -34,7 +34,7 @@ In this project we used the following provision.
 # Steps to run the provisioning in terraform
 1. Clone the repo
 ```
-git clone https://github.com/ahamedyaserarafath/terraform_promethus.git
+git clone https://github.com/ahamedyaserarafath/terraform_consul.git
 ```
 2. Terraform initialize a working directory 
 ```
