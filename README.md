@@ -67,11 +67,13 @@ docker build -t ecs_consul_registrator .
 
 4. Create a task with ecs_consul_registrator Container and mount the below file for service discovery of ecs cluster.
 ```
+...
 Container Path    	Source Volume 	Read only
 /tmp/docker.sock	  sourcedocker
-
+...
 Name - sourcedocker
 Source Path -/var/run/docker.sock
+...
 ```
 Json parser for your reference
 ```
