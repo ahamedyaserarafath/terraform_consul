@@ -13,7 +13,7 @@ Consul - We will achieve high availability (HA) by clustering three Consul serve
 We use consul for service discovery in ECS which will be explained in the last part.
 
 # Pre-requisites
-Before we get started installing the Prometheus stack on AWS. 
+Before we get started installing the Consul stack on AWS. 
 * Ensure you install the latest version of [terraform](https://learn.hashicorp.com/terraform/getting-started/install.html) is installed
 * Create the IAM access in AWS to provision the ec2 instance,vpc,subnet,internet gateway,security group,iam.
 
@@ -47,4 +47,4 @@ terraform plan
 ```
 terraform apply
 ```
-Note: The above command will provision the ec2 instance and install the prometheus
+Note: The above command will provision the ec2 instance and install the Consul
